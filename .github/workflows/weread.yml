@@ -24,6 +24,6 @@ jobs:
         run: |
           python weread.py "${{secrets.WEREAD_COOKIE}}" "${{secrets.NOTION_TOKEN}}" "${{secrets.NOTION_DATABASE_ID}}" 
       - name: Save state
-        run: echo "{name}={value}" >> $GITHUB_STATE
+        run: echo "{name}={value}" >> $githubOutPut
       - name: Set output
-        run: echo "{name}={value}" >> $GITHUB_OUTPUT
+        run: echo "{name}={value}" >> $githubOutPut
