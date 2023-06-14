@@ -11,6 +11,7 @@ from requests.utils import cookiejar_from_dict
 from http.cookies import SimpleCookie
 from datetime import datetime
 import hashlib
+import uuid
 
 WEREAD_URL = "https://weread.qq.com/"
 WEREAD_NOTEBOOKS_URL = "https://i.weread.qq.com/user/notebooks"
@@ -20,6 +21,12 @@ WEREAD_READ_INFO_URL = "https://i.weread.qq.com/book/readinfo"
 WEREAD_REVIEW_LIST_URL = "https://i.weread.qq.com/review/list"
 WEREAD_BOOK_INFO = "https://i.weread.qq.com/book/info"
 
+
+
+
+def set_output(name, value):
+    with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+        print(f'{name}={value}', file=fh)
 
 def parse_cookie_string(cookie_string):
     cookie = SimpleCookie()
@@ -177,7 +184,7 @@ def check(bookId):
     response = client.databases.query(database_id=database_id, filter=filter)
     for result in response["results"]:
         time.sleep(0.3)
-        print(result)
+        set_output("databases.result",result)
         client.blocks.delete(block_id=result["id"])
 
 
