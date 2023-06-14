@@ -25,7 +25,7 @@ WEREAD_BOOK_INFO = "https://i.weread.qq.com/book/info"
 
 
 def set_output(name, value):
-    with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+    with open(os.environ['githubOutPut'], 'a') as fh:
         print(f'{name}={value}', file=fh)
 
 def parse_cookie_string(cookie_string):
