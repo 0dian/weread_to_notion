@@ -21,12 +21,29 @@ WEREAD_READ_INFO_URL = "https://i.weread.qq.com/book/readinfo"
 WEREAD_REVIEW_LIST_URL = "https://i.weread.qq.com/review/list"
 WEREAD_BOOK_INFO = "https://i.weread.qq.com/book/info"
 
+WEREAD_MYBOOKLIST_URL="https://i.weread.qq.com/shelf/sync"
 
 
+def get_mybooks():
+    userVid=parse_cookie_string(weread_cookie)["wr_vid"]
+    params=dict(userVid=userVid);
+    r = session.get("https://i.weread.qq.com/shelf/sync",params=params)
+    if r.ok:
+        print(r.json())
 
-def set_output(name, value):
-    with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-        print(f'{name}={value}', file=fh)
+# 获取我的书架信息
+def get_mybook_list():
+    userVid=parse_cookie_string(weread_cookie)["wr_vid"]
+    params=dict(userVid=userVid);
+    r = session.get(WEREAD_MYBOOKLIST_URL,params=params)
+    
+    if r.ok:
+        data=r.json()
+        books=data.get("books")
+        return books
+    else:
+        print(r.text)
+    return None
 
 def parse_cookie_string(cookie_string):
     cookie = SimpleCookie()
@@ -184,8 +201,11 @@ def check(bookId):
     response = client.databases.query(database_id=database_id, filter=filter)
     for result in response["results"]:
         time.sleep(0.3)
-        set_output("databases.result",result)
+        disSync=result.get('properties').get("DisSync").get("checkbox");
+        if disSync :# 数据已经被标识成不允许进行同步
+            return True;
         client.blocks.delete(block_id=result["id"])
+    return False
 
 
 def get_chapter_info(bookId):
@@ -396,18 +416,19 @@ if __name__ == "__main__":
     )
     session.get(WEREAD_URL)
     latest_sort = get_sort()
-    books = get_notebooklist()
+    # books = get_notebooklist()
+    books=get_mybook_list()
     if (books != None):
         for book in books:
-            sort = book["sort"]
+            sort=book.get("readUpdateTime")
             if sort <= latest_sort:
-                continue
-            book = book.get("book")
+               continue
             title = book.get("title")
             cover = book.get("cover")
             bookId = book.get("bookId")
             author = book.get("author")
-            check(bookId)
+            if check(bookId):
+                continue
             chapter = get_chapter_info(bookId)
             bookmark_list = get_bookmark_list(bookId)
             summary, reviews = get_review_list(bookId)
